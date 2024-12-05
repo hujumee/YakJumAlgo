@@ -1,33 +1,49 @@
-n = int(input())
-ine_sing = list(map(str,input().split()))
+import sys
+input = sys.stdin.readline
 
-visited = [0]*10
-max_ans =""
-min_ans =""
+N = int(input())
+signs = input().split()
+max_n, min_n = 0, float("inf")
+check = [0] * 10
 
-def check(i,j,k):
-    if k=='<':
-        return i<j
-    else:
-        return i>j
-
-def solve(idx,s):
-    global max_ans,min_ans
-
-    if(idx==n+1):
-        if(len(min_ans)==0):
-            min_ans = s
-        else:
-            max_ans = s
+def dfs(i, k, tmp):
+    global max_n, min_n
+    if i == N+1:
+        tmp_int = 0
+        for elem in tmp:
+            tmp_int = tmp_int*10 + int(elem)
+        min_n = min(tmp_int, min_n)
+        max_n = max(tmp_int, max_n)
         return
-    for i in range(10):
-        if(visited[i]==0):
-            if(idx==0 or check(s[-1],str(i),ine_sing[idx-1])):
-                visited[i]=True
-                solve(idx+1,s+str(i))
-                visited[i]=False
+    
 
+    if i == 0:
+        for j in range(0, 10):
+            tmp.append(j)
+            check[j] = 1
+            dfs(i+1, j, tmp)
+            tmp.pop()
+            check[j] = 0
 
-solve(0,"")
-print(max_ans)
-print(min_ans)
+    elif signs[i-1] == '<':
+        for j in range(k+1, 10):
+            if not check[j]:
+                tmp.append(j)
+                check[j] = 1
+                dfs(i+1, j, tmp)
+                tmp.pop()
+                check[j] = 0
+
+    elif signs[i-1] == '>':
+        for j in range(0, k):
+            if not check[j]:
+                tmp.append(j)
+                check[j] = 1
+                dfs(i+1, j, tmp)
+                tmp.pop()
+                check[j] = 0
+    return
+
+dfs(0, 0, [])
+print(str(max_n))
+print(str(min_n).zfill(N+1))
