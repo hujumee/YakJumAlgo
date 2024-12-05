@@ -1,27 +1,51 @@
+import sys
+input = sys.stdin.readline
 from collections import deque
-n, m = map(int, input().split())
-grid = [list(map(int, input().split())) for _ in range(n)]
-dy, dx = [0, 1, 0, -1], [1, 0, -1, 0]
-answers = []
-def bfs(sy, sx):
-    q = deque()
-    q.append((sy, sx, 0))
-    visited = [[False for _ in range(m)] for _ in range(n)]
-    visited[sy][sx] = True
+
+N, M = map(int, input().split())
+graph = [[] for _ in range(N)]
+for i in range(N):
+    tmp = list(map(int, input().split()))
+    graph[i] = tmp
+
+def bfs(r, c, graph): # 시작점의 행번호, 열번호, 움직일 그래프
+    q = deque([(0, r, c)])
+    visited = [[0 for _ in range(M)] for _ in range(N)]
+    visited[r][c] = 1
+    dr, dc = [-1, 0, 1, 0], [0, 1, 0, -1]
+    answer = (0, 0) # cnt, 처음+끝
+
     while q:
-        y, x, cnt = q.popleft()
-        flag = False
+        cnt, tmp_r, tmp_c = q.popleft()
+        # 최장거리, 최대합 갱신
+        if cnt > answer[0]:
+            tmp_sum = graph[r][c]+graph[tmp_r][tmp_c]
+            answer = (cnt, tmp_sum)
+        elif cnt == answer[0]:
+            tmp_sum = graph[r][c]+graph[tmp_r][tmp_c]
+            if tmp_sum > answer[1]:
+                answer = (cnt, tmp_sum)
+
         for i in range(4):
-            ny, nx = y+dy[i], x+dx[i]
-            if 0 <= ny < n and 0 <= nx < m and grid[ny][nx] > 0 and not visited[ny][nx]:
-                flag = True
-                visited[ny][nx] = True
-                q.append((ny, nx, cnt+1))
-        if not flag:
-            answers.append((cnt, grid[sy][sx]+grid[y][x]))
-for i in range(n):
-    for j in range(m):
-        if grid[i][j] > 0:
-            bfs(i, j)
-answers.sort(key=lambda x:(x[0], x[1]), reverse=True)
-print(answers[0][1])
+            new_r, new_c = tmp_r+dr[i], tmp_c+dc[i]
+            if 0 <= new_r < N and 0 <= new_c < M and graph[new_r][new_c]: # 그래프의 범위 내에 존재하고, 0이 아닌지 검사
+                if not visited[new_r][new_c]: # 이미 지나간 곳인지 검사
+                    visited[new_r][new_c] = 1
+                    q.append((cnt+1, new_r, new_c))
+    return answer
+
+def solution(graph):
+    passwds = []
+
+    for i in range(N):
+        for j in range(M):
+            if graph[i][j]: # (j,i)의 값이 0이 아니면
+                tmp = bfs(i, j, graph)
+                passwds.append(tmp)
+
+    if len(passwds) == 0:
+        return 0
+    passwds.sort(reverse=True)
+    return passwds[0][1]
+
+print(solution(graph))
